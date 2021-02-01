@@ -1,0 +1,51 @@
+#!/bin/bash
+
+OPT1="Low"
+OPT2="Medium"
+OPT3="High"
+
+function brightness_notify {
+	local VALUE="$(xbacklight -get)"
+	notify-send "Brightness $1" "Intensity: $VALUE" --urgency=low
+}
+
+function brightness_up {
+	xbacklight -inc 2%
+}
+
+function brightness_down {
+	xbacklight -dec 2%
+		
+}
+
+function brightness_prompt {
+	local OPTIONS="$OPT1,$OPT2,$OPT3"
+	local CHOICE=$(echo $OPTIONS | rofi -width 15 -lines 6 -dmenu -sep "," -p "brightness")
+
+	case $CHOICE in
+		$OPT1)
+			xbacklight -set 25
+			brightness_notify "low"
+			;;
+		$OPT2)
+			xbacklight -set 50
+			brightness_notify "medium"
+			;;
+		$OPT3)
+			xbacklight -set 75
+			brightness_notify "high"
+			;;
+	esac
+}
+
+case $1 in
+	"up")
+		brightness_up
+		;;
+	"down")
+		brightness_down
+		;;
+	"prompt")
+		brightness_prompt
+		;;
+esac
