@@ -1,0 +1,31 @@
+#!/bin/bash
+
+function battery_notify {
+	local CHARGING=$(cat /sys/class/power_supply/AC/online)
+	if [ $CHARGING -eq 0 ]; then
+		notify-send  "Battery $1" "Power Level: $2" -u critical
+	fi
+}
+
+function battery_check {
+	local LEVEL=$(cat /sys/class/power_supply/BAT$1/capacity)
+	if [ $LEVEL -lt 10 ]; then
+		battery_notify $1 $LEVEL
+	fi
+}
+
+function power_monitor {
+	while :
+	do
+		battery_check 0
+		battery_check 1
+		snooze -H* -M /5
+	done
+}
+
+case $1 in
+	"monitor")
+		power_monitor
+		;;
+esac
+
