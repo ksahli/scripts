@@ -1,0 +1,90 @@
+#!/bin/bash
+
+OPT1="Disable"
+OPT2="Enable"
+OPT3="Low"
+OPT4="Medium"
+OPT5="High"
+
+function audio_notify {
+	local VALUE="$(amixer sget Master | grep -o '[0-9]*%')"
+	notify-send "Audio $1" "Volume: $VALUE" --urgency=low
+}
+
+function audio_up {
+	amixer -c 0 sset Master 2%+
+}
+
+function audio_down {
+	amixer -c 0 sset Master 2%-
+}
+
+function audio_on {
+	amixer -c 0 sset Master on
+}
+
+function audio_off {
+	amixer -c 0 sset Master off
+}
+
+function audio_toggle {
+	local STATUS=$(amixer -c 0 sget Master toggle | \
+		grep -o '[a-z]*\]$' | \
+		grep -o '[a-z]*')
+
+	case $STATUS in
+		"on")
+			audio_off
+			audio_notify "off"
+			;;
+		"off")
+			audio_on
+			audio_notify "on"
+			;;
+	esac
+}
+
+
+function audio_prompt {
+	local OPTIONS="$OPT1,$OPT2,$OPT3,$OPT4,$OPT5"
+	local CHOICE=$(echo $OPTIONS | rofi -width 15 -lines 6 -dmenu -sep "," -p "audio")
+
+	case $CHOICE in
+		$OPT1)
+			amixer -c 0 sset Master off
+			audio-notify "disabled"
+			;;
+		$OPT2)
+			amixer -c 0 sset Master on
+			audio-notify "enabled"
+			;;
+		$OPT3)
+			amixer -c 0 sset Master 25%
+			audio-notify "low"
+			;;
+		$OPT4)
+			amixer -c 0 sset Master 50%
+			audio-notify "medium"
+			;;
+		$OPT5)
+			amixer -c 0 sset Master 75%
+			audio-notify "high"
+			;;
+	esac
+}
+
+
+case $1 in
+	"up")
+		audio_up
+		;;
+	"down")
+		audio_down
+		;;
+	"toggle")
+		audio_toggle
+		;;
+	"prompt")
+		audio_prompt
+		;;
+esac
