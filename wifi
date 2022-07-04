@@ -1,0 +1,70 @@
+#!/bin/bash
+
+
+function wifi_notify {
+	local TITLE="Wireless status"
+	local DESCRIPTION=""
+	local SSID=$(wifi_ssid)
+	if [ -z "$SSID" ];
+	then
+		DESCRIPTION="Disconnected"
+	else
+		DESCRIPTION="Connected to $SSID"
+	fi
+	notify-send "$TITLE" "$DESCRIPTION" -u low
+}
+
+function wifi_ssid {
+	echo $(wpa_cli status | grep ^ssid.*$ | cut -d$'=' -f2)
+}
+
+function wifi_disconnect {
+	wpa_cli disconnect
+}
+
+function wifi_connect {
+	if [ -z "$1" ];
+	then
+		wpa_cli reconnect
+	else
+		wpa_cli select_network $1
+	fi
+}
+
+function wifi_toggle {
+	local SSID=$(wifi_ssid)
+	if [ -z "$SSID" ];
+	then
+		wifi_connect
+	else
+		wifi_disconnect
+	fi
+	sleep 5s
+	wifi_notify
+}
+
+function wifi_prompt {
+	local selected=$(wpa_cli list_networks \
+						| cut -d$'\t' -f2 \
+						| tail -n +3 \
+						| rofi -dmenu -p "Access points")
+	local network_id=$(wpa_cli list_networks | grep $selected | cut -d$'\t' -f1)
+	local flags=$(wpa_cli list_networks | grep $selected | cut -d$'\t' -f4)
+	if [ "$flags" == "[CURRENT]" ];
+	then
+		wifi_disconnect
+	else 
+		wifi_connect $network_id
+	fi
+	sleep 5s
+	wifi_notify
+}
+
+case $1 in
+	"prompt")
+		wifi_prompt
+		;;
+	"toggle")
+		wifi_toggle
+		;;
+esac

@@ -1,0 +1,23 @@
+#!/bin/bash
+
+function settings_prompt {
+	local OPTIONS="Audio,Brightness,Wireless Networks"
+	local CHOICE=$(echo $OPTIONS | rofi -width 15 -lines 6 -dmenu -sep "," -p "Settings")
+	case $CHOICE in
+		"Audio")
+			audio prompt
+			;;
+		"Brightness")
+			brightness prompt
+			;;
+		"Wireless Networks")
+			wifi prompt
+			;;
+	esac
+}
+
+case $1 in
+	"prompt")
+		settings_prompt
+		;;
+esac

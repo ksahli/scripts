@@ -1,0 +1,18 @@
+#!/bin/bash
+
+function bookmarks_prompt {
+	local TAG=$(cut ~/.config/vimb/bookmark -d$'\t' -f3 \
+					| sort  \
+					| uniq \
+					| rofi -dmenu -p "tag")
+	if [ -n "$TAG" ]; then
+		local URL=$(grep $TAG  ~/.config/vimb/bookmark \
+						| cut  -d$'\t' -f1  \
+						| rofi -dmenu -p "bookmark")
+		if [ -n "$URL" ]; then
+			vimb $URL
+		fi
+	fi
+}
+
+bookmarks_prompt
